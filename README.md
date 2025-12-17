@@ -1,32 +1,69 @@
-# ExamsFileMetaScrubber
+# Scrubber
 
-Et lite åpent verktøy (HTML + JS) for å anonymisere metadata i Office/OOXML (`.docx/.xlsx/.pptx` + makrovarianter) og ODF (`.odt/.ods/.odp`) – **uten å endre innholdet**, og **uten opplasting** (klientside, kan kjøres offline).
+A simple, standalone HTML tool to **remove sensitive metadata** from Office documents – completely in your browser, with **no data leaving your computer**.
 
-## Slik bruker du
-- Åpne `index.html` i Edge/Chrome.
-- Dra og slipp dokumenter i boksen.
-- Trykk **Scrub Files** – du får nedlastet «`- ANONYM`» kopier.
+**Primary use case:**  
+This program is designed to remove metadata from exam papers (text files) that are delivered to the teacher or examiner who will grade them. This ensures **100% anonymity** in situations where it is required that the person grading a student's exam does not know the identity of the student.
 
-## JSZip
-Verktøyet trenger [JSZip](https://stuk.github.io/jszip/) for å lese/skrives ZIP (OOXML/ODF er ZIP + XML). Vi laster JSZip slik:
-1. **CDN først**: `https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js`.
-2. **Fallback**: lokal `jszip.min.js` ved siden av `index.html` (for ren offline).
+Supports:
+- Microsoft Office formats: `.docx`, `.xlsx`, `.pptx`
+- OpenDocument formats (LibreOffice/OpenOffice): `.odt`, `.ods`, `.odp`
 
-> Hvis du vil ha *fullt offline*, last ned `jszip.min.js` og legg den i samme mappe som `index.html`.
+Perfect for schools, universities, and any examination setting that requires blind grading.
 
-## GitHub-hosting (åpenhet)
-- Legg filene i et åpent repo.
-- Aktiver **GitHub Pages** (Settings → Pages → Source: `main` → `/(root)`), så kan siden brukes direkte fra repoet.
-- Da vil CDN-lastingen fungere automatisk.
+## Where to donwload
+that is easy -> [Click here to download Scrubber](https://github.com/rSignal86/Scrubber/archive/refs/heads/main.zip)
 
-## Hva fjernes/blankes
-- **OOXML**: `docProps/core.xml` (forfatter, sist endret av, m.m.), tidsstempler (`created/modified`), `revision`; `docProps/app.xml` (`Company`, `Manager`, `HyperlinkBase`, `LastSavedBy`); `docProps/custom.xml` fjernes; kommentarforfattere i Word/Excel/PowerPoint anonymiseres; Excel `xl/persons/person.xml` blankes.
-- **ODF**: `meta.xml` (`dc:creator`, `meta:initial-creator`, `meta:keyword`, tittel/subject/description/date, `meta:user-defined`).
+## Features
 
-## Begrensninger
-- Gamle binærformater (`.doc/.xls/.ppt`) må konverteres til OOXML.
-- **Track Changes** i Word kan inneholde forfatternavn i revisjoner; verktøyet endrer ikke disse for å unngå risiko. Bruk «Dokumentinspektør» i Office.
-- Plattformmetadata (OneDrive/SharePoint) kan vise «Sist endret av» selv om filen er anonym; del lokale kopier.
+- **100% client-side** – No uploads, no servers, no tracking
+- Drag & drop or click to select multiple files (up to 50 at once)
+- Choose exactly which metadata to remove:
+  - Author / Creator
+  - Last Modified By
+  - Created Date
+  - Modified Date
+  - Title
+  - Subject
+- Automatically adds `_SCRUBBED` to cleaned filenames (e.g., `exam.docx` → `exam_SCRUBBED.docx`)
+- Downloads all cleaned files in a single `.zip` archive
+- Uses your custom JSZip build first, with automatic fallback to official CDN
 
-## Lisens
-MIT License – se `LICENSE`.
+## How to Use
+
+1. Download or clone this repository.
+2. Open `Scrubber.html` in any modern web browser (Chrome, Edge, Firefox, etc.).
+3. Drag your exam files into the drop zone or click to select them.
+4. Check/uncheck the metadata types you want to remove (recommended: leave all checked for full anonymity).
+5. Click **"Scrub files and download as ZIP"**.
+6. Extract the downloaded `scrubbed_files.zip` – the cleaned, anonymous files are ready for submission or grading.
+
+> No internet connection required after the initial load (except for loading JSZip).
+
+## Privacy & Security
+
+- All processing happens **locally in your browser**.
+- No files are uploaded anywhere.
+- The tool uses JSZip to read and modify the ZIP-based document structure directly in memory.
+- Ideal for protecting student privacy during anonymous grading.
+
+## Technical Details
+
+- Built with plain HTML, CSS, and vanilla JavaScript
+- Uses [JSZip](https://stuk.github.io/jszip/) (custom minified version hosted in this repo)
+- Modifies `docProps/core.xml` (OOXML) or `meta.xml` (ODF) to clear selected metadata fields
+
+## Files
+
+- `Scrubber.html` – The complete standalone application
+- `data/jszi1p.min.js` – Custom minified JSZip library (used as primary source)
+
+## License
+
+This project is open source and free to use, modify, and distribute.
+
+Feel free to fork, improve, or share!
+
+---
+
+Made with ❤️ for privacy and fair assessment by a dude that works in a school

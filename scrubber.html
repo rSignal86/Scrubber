@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrubber</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 20px; }
+        h1, p { text-align: center; }
+        #status { text-align: center; font-style: italic; color: #555; margin: 10px 0; }
+        #update-notification {
+            background: #ffeb3b;
+            color: #333;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 3px solid #fbc02d;
+            margin-bottom: 20px;
+        }
+        #update-notification a { color: #d32f2f; text-decoration: underline; }
+        #drop-area {
+            border: 3px dashed #aaa;
+            border-radius: 20px;
+            width: 600px;
+            margin: 50px auto;
+            padding: 40px;
+            text-align: center;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #drop-area.highlight { border-color: #007bff; background: #eef; }
+        #fileInput { display: none; }
+        #metadata-options, #fileList {
+            width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #scrubBtn {
+            display: block;
+            width: 250px;
+            margin: 30px auto;
+            padding: 12px;
+            font-size: 18px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #scrubBtn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div id="update-notification" style="display:none;"></div>
+
+    <h1>Scrubber <span style="font-size:0.6em;color:#666;"></span></h1>
+    <p>Remove metadata from Microsoft Office, LibreOffice, and OpenOffice files<br>(.docx, .xlsx, .pptx, .odt, .ods, .odp)</p>
+    <div id="status">Loading JSZip library...</div>
+
+    <div id="drop-area">Drop files here or click to select<br>(Max 50 files at a time)</div>
+    <input type="file" id="fileInput" multiple accept=".docx,.xlsx,.pptx,.odt,.ods,.odp">
+
+    <div id="fileList"></div>
+
+    <div id="metadata-options">
+        <h3>Select which metadata to remove:</h3>
+        <label><input type="checkbox" id="remove-author" checked> Author / Creator</label><br><br>
+        <label><input type="checkbox" id="remove-lastmodifiedby" checked> Last Modified By</label><br><br>
+        <label><input type="checkbox" id="remove-created" checked> Created Date</label><br><br>
+        <label><input type="checkbox" id="remove-modified" checked> Modified Date</label><br><br>
+        <label><input type="checkbox" id="remove-title"> Title</label><br><br>
+        <label><input type="checkbox" id="remove-subject"> Subject</label><br>
+    </div>
+
+    <button id="scrubBtn" disabled>Scrub files and download as ZIP</button>
+
+    <script>
+        // === Version check using GitHub Releases Tag ===
+        const CURRENT_VERSION = 'GHv1.0';
+        const LATEST_RELEASE_API = 'https://api.github.com/repos/rSignal86/Scrubber/releases/latest';
+        const REPO_URL = 'https://github.com/rSignal86/Scrubber';
+
+        fetch(LATEST_RELEASE_API, { cache: 'no-cache' })
+            .then(response => response.ok ? response.json() : Promise.reject('No releases'))
+            .then(data => {
+                const latestTag = data.tag_name?.trim();
+                if (latestTag && latestTag !== CURRENT_VERSION) {
+                    const notification = document.getElementById('update-notification');
+                    notification.style.display = 'block';
+                    notification.innerHTML = `
+                        New version available: <strong>${latestTag}</strong>!<br>
+                        You are using ${CURRENT_VERSION}. 
+                        <a href="${REPO_URL}" target="_blank">Click here to download the latest version</a>.
+                    `;
+                }
+            })
+            .catch(err => {
+                console.log('No update check possible (no releases yet or offline) – using current version.');
+            });
+
+        // === Load JSZip with fallback ===
+        const statusDiv = document.getElementById('status');
+        const primaryUrl = 'https://raw.githubusercontent.com/rSignal86/Scrubber/main/data/jszi1p.min.js';
+        const fallbackUrl = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+
+        function loadJSZip(url, isFallback = false) {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = () => {
+                if (typeof JSZip !== 'undefined') {
+                    const source = isFallback ? 'official CDN (fallback)' : 'GitHub repo';
+                    statusDiv.textContent = `JSZip loaded from ${source} ✅`;
+                    console.log(`JSZip loaded from ${source}`);
+                    initApp();
+                }
+            };
+            script.onerror = () => {
+                if (!isFallback) {
+                    console.warn('Failed to load JSZip from repo – trying fallback...');
+                    statusDiv.textContent = 'Trying fallback source...';
+                    loadJSZip(fallbackUrl, true);
+                } else {
+                    statusDiv.textContent = 'Critical error: Could not load JSZip ❌';
+                    alert('Could not load JSZip. Check internet and refresh.');
+                }
+            };
+            document.head.appendChild(script);
+        }
+
+        loadJSZip(primaryUrl);
+
+        // === Main application ===
+        function initApp() {
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            const scrubBtn = document.getElementById('scrubBtn');
+            const maxFiles = 50;
+            let filesToProcess = [];
+
+            const supportedExtensions = ['.docx', '.xlsx', '.pptx', '.odt', '.ods', '.odp'];
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+                dropArea.addEventListener(event, e => { e.preventDefault(); e.stopPropagation(); });
+            });
+            ['dragenter', 'dragover'].forEach(event => dropArea.addEventListener(event, () => dropArea.classList.add('highlight')));
+            ['dragleave', 'drop'].forEach(event => dropArea.addEventListener(event, () => dropArea.classList.remove('highlight')));
+            dropArea.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+            dropArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+            function handleFiles(files) {
+                const array = [...files];
+                const valid = array.filter(f => supportedExtensions.some(ext => f.name.toLowerCase().endsWith(ext)));
+
+                if (valid.length === 0) { alert('No supported files selected.'); return; }
+                if (valid.length > maxFiles) { alert(`Max ${maxFiles} files at once. You selected ${valid.length}.`); return; }
+
+                filesToProcess = valid;
+                displayFiles();
+                scrubBtn.disabled = false;
+            }
+
+            function displayFiles() {
+                fileList.innerHTML = `<h3>Selected files (${filesToProcess.length}):</h3><ul>`;
+                filesToProcess.forEach(file => { fileList.innerHTML += `<li>${file.name}</li>`; });
+                fileList.innerHTML += `</ul>`;
+            }
+
+            function getScrubbedFilename(originalName) {
+                const lastDot = originalName.lastIndexOf('.');
+                if (lastDot === -1) return originalName + '_SCRUBBED';
+                return originalName.substring(0, lastDot) + '_SCRUBBED' + originalName.substring(lastDot);
+            }
+
+            scrubBtn.addEventListener('click', async () => {
+                scrubBtn.disabled = true;
+                scrubBtn.textContent = 'Processing files...';
+
+                const zip = new JSZip();
+                const opts = {
+                    author: document.getElementById('remove-author').checked,
+                    lastModBy: document.getElementById('remove-lastmodifiedby').checked,
+                    created: document.getElementById('remove-created').checked,
+                    modified: document.getElementById('remove-modified').checked,
+                    title: document.getElementById('remove-title').checked,
+                    subject: document.getElementById('remove-subject').checked,
+                };
+
+                for (const file of filesToProcess) {
+                    try {
+                        const buffer = await file.arrayBuffer();
+                        const jszip = await JSZip.loadAsync(buffer);
+
+                        const isOOXML = jszip.file('docProps/core.xml') !== null;
+                        const isODF = jszip.file('meta.xml') !== null;
+                        if (!isOOXML && !isODF) { console.warn(`Unsupported: ${file.name}`); continue; }
+
+                        const xmlPath = isOOXML ? 'docProps/core.xml' : 'meta.xml';
+                        let xmlStr = await jszip.file(xmlPath).async('string');
+                        const xmlDoc = new DOMParser().parseFromString(xmlStr, 'application/xml');
+
+                        if (isOOXML) {
+                            if (opts.author) removeText(xmlDoc, 'http://purl.org/dc/elements/1.1/', 'creator');
+                            if (opts.lastModBy) removeText(xmlDoc, 'http://schemas.openxmlformats.org/package/2006/metadata/core-properties', 'lastModifiedBy');
+                            if (opts.created) removeText(xmlDoc, 'http://purl.org/dc/terms/', 'created');
+                            if (opts.modified) removeText(xmlDoc, 'http://purl.org/dc/terms/', 'modified');
+                            if (opts.title) removeText(xmlDoc, 'http://purl.org/dc/elements/1.1/', 'title');
+                            if (opts.subject) removeText(xmlDoc, 'http://purl.org/dc/elements/1.1/', 'subject');
+                        } else {
+                            if (opts.author) removeText(xmlDoc, 'http://purl.org/dc/elements/1.1/', 'creator');
+                            if (opts.lastModBy) removeText(xmlDoc, 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0', 'initial-creator');
+                            if (opts.created) removeText(xmlDoc, 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0', 'creation-date');
+                            if (opts.modified) removeText(xmlDoc, 'http://purl.org/dc/elements/1.1/', 'date');
+                            if (opts.title) removeText(xmlDoc, 'http://purl.org/dc/elements/1.1/', 'title');
+                            if (opts.subject) removeText(xmlDoc, 'http://purl.org/dc/elements/1.1/', 'subject');
+                        }
+
+                        jszip.file(xmlPath, new XMLSerializer().serializeToString(xmlDoc));
+                        const scrubbedBlob = await jszip.generateAsync({ type: 'blob' });
+                        zip.file(getScrubbedFilename(file.name), scrubbedBlob);
+                    } catch (err) {
+                        console.error(`Error processing ${file.name}:`, err);
+                        alert(`Error processing ${file.name}. Check console for details.`);
+                    }
+                }
+
+                try {
+                    const content = await zip.generateAsync({ type: 'blob' });
+                    const url = URL.createObjectURL(content);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'scrubbed_files.zip';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    alert('Could not generate the download file.');
+                }
+
+                scrubBtn.disabled = false;
+                scrubBtn.textContent = 'Scrub files and download as ZIP';
+            });
+
+            function removeText(doc, namespace, tagName) {
+                const elements = doc.getElementsByTagNameNS(namespace, tagName);
+                for (let el of elements) el.textContent = '';
+            }
+        }
+    </script>
+</body>
+</html>
