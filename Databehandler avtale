@@ -1,0 +1,68 @@
+# Databehandleravtale for Scrubber
+
+**Scrubber** er et gratis, åpen kildekode-verktøy (standalone HTML-fil) som fjerner sensitiv metadata fra Office-dokumenter (.docx, .xlsx, .pptx, .odt, .ods, .odp). Verktøyet er spesielt utviklet for bruk i utdanningssektoren for å sikre full anonymitet ved innlevering og retting av eksamensbesvarelser, ved å fjerne identifiserende informasjon som forfatternavn, opprettelses-/endringsdatoer og annen metadata.
+
+## Nøkkelpunkter om personvern – Dine data forlater aldri din enhet
+
+Scrubber er bygget med personvern som høyeste prioritet. All kjernebehandling av filer skjer utelukkende i din nettleser, og ingen innhold fra dokumentene dine sendes noen gang til eksterne servere.
+
+- **100 % klientbasert behandling**: Fjerning av metadata foregår lokalt i nettleseren ved bruk av JavaScript og JSZip-biblioteket. Verken filinnhold, metadata eller avledet data lastes opp, deles, lagres eksternt eller logges av verktøyet eller utvikleren.
+
+- **Minimale eksterne forespørsler kun for funksjonalitet**: Scrubber foretar begrensede HTTP-forespørsler for å laste JSZip-biblioteket (primært fra prosjektets GitHub-repositorium, med fallback til offentlig CDN) og for å sjekke om det finnes ny versjon via GitHubs offentlige API. Disse forespørslene gjelder kun offentlige, statiske ressurser og inneholder ingen bruker- eller dokumentrelatert informasjon. Detaljer finnes nedenfor.
+
+- **Kun midlertidig minne**: Filer lagres kun midlertidig i nettleserens minne under bruk og slettes automatisk når siden lukkes eller oppdateres.
+
+- **Ingen sporing eller analyse**: Verktøyet bruker ingen informasjonskapsler, sporingsmekanismer, analyseverktøy eller telemetri.
+
+Etter som **ingen data fra dokumentene dine overføres**, gir Scrubber et usedvanlig lavt personvernrisiko sammenlignet med serverbaserte alternativer.
+
+## Eksterne forespørsler forklart
+
+### 1. Lasting av JSZip-biblioteket
+Scrubber trenger JSZip for å håndtere ZIP-baserte dokumentformater.
+
+- **Primærkilde**: GitHub raw-fil (`https://raw.githubusercontent.com/rSignal86/Scrubber/main/data/jszi1p.min.js`).
+- **Reserve-kilde** (kun hvis primærkilden feiler): offentlig CDN (`cdnjs.cloudflare.com`, driftet av Cloudflare).
+
+Disse forespørslene henter kun den statiske JavaScript-filen. GitHub og Cloudflare kan logge standard tilgangsinformasjon (IP-adresse, tidspunkt, forespurt URL, grunnleggende header-informasjon) til drifts-, sikkerhets- og misbruksforebyggende formål. Dette er normalt ved tilgang til offentlige webressurser og reguleres av deres respektive personvernerklæringer som er i samsvar med GDPR. Ingen dokumentdata eller personlig innhold inngår i disse forespørslene.
+
+### 2. Versjonssjekk
+Ved sidelasting kontakter Scrubber GitHubs offentlige API (`https://api.github.com/repos/rSignal86/Scrubber/releases/latest`) for å hente nyeste release-tag. Dette gir brukeren beskjed om oppdateringer.
+
+Forespørselen inneholder ingen bruker- eller dokumentdata. GitHub kan logge minimal tilgangsinformasjon (IP-adresse, tidspunkt) i henhold til sin personvernerklæring for rate-begrensning og sikkerhet. Sjekken feiler stille ved fravær av internett og påvirker ikke funksjonaliteten.
+
+Begge typer eksterne forespørsler er begrensede, transparente og omfatter kun ikke-sensitive metadata som er vanlig ved lasting av nettsider. Brukere som er bekymret for slik logging kan benytte VPN, Tor eller modifisere den åpne koden for å laste ressurser lokalt og deaktivere versjonssjekken.
+
+## Databehandlerstatus og GDPR
+
+Scrubber er utformet i full overensstemmelse med **personvernforordningen (GDPR)**, med særlig vekt på personvern gjennom design og standardinnstillinger (artikkel 25) samt dataminimering (artikkel 5).
+
+### Roller etter GDPR
+- **Du (brukeren)** er **behandlingsansvarlig** (GDPR artikkel 4 nr. 7): Du bestemmer formål og virkemidler for behandlingen (f.eks. anonymisering av elevbesvarelser) og har ansvar for egen etterlevelse av personvernregelverket.
+
+- **Scrubber** er **ikke databehandler** (GDPR artikkel 4 nr. 8): Ingen personopplysninger overføres til eller behandles av utvikleren eller tredjeparter på dine vegne. Eksterne forespørsler (lasting av script og versjonssjekk) håndteres av GitHub og Cloudflare som selvstendige behandlingsansvarlige for sine tjenester. Det foreligger derfor **ingen databehandleravtale** etter GDPR artikkel 28.
+
+### Samsvar med GDPR-prinsipper
+- **Lovlighet, redelighet og åpenhet** (art. 5(1)(a)): Behandlingen er brukerstyrt og fullt gjennomsiktig; kildekoden er åpen og reviderbar.
+- **Formålsbegrensning** (art. 5(1)(b)): Verktøyet er utelukkende beregnet på fjerning av metadata for anonymitet.
+- **Dataminimering** (art. 5(1)(c)): Kun valgte metadatafelt berøres; ingen unødvendig data samles inn eller overføres.
+- **Riktighet** (art. 5(1)(d)): Brukere kan umiddelbart kontrollere de behandlede filene.
+- **Lagringsbegrensning** (art. 5(1)(e)): Ingen lagring utover nettleserøkten.
+- **Integritet og konfidensialitet** (art. 5(1)(f)): Lokal behandling hindrer uautorisert tilgang.
+- **Ansvarlighet** (art. 5(2)): Åpen kildekode og denne erklæringen viser ansvar.
+
+Risikoen for personvernbrudd som stammer fra Scrubber er i praksis null, siden ingen dokumentdata forlater nettleseren.
+
+## Anbefalinger til behandlingsansvarlige
+Ved bruk av Scrubber i skoler eller andre virksomheter:
+- Informer elevene eller andre registrerte om at metadata fjernes for å ivareta anonymitet (GDPR artikkel 13–14).
+- Dokumenter bruk av verktøyet i virksomhetens oversikt over behandlingsaktiviteter (GDPR artikkel 30) som et teknisk tiltak for anonymisering.
+- Kontroller alltid de behandlede filene før videre distribusjon.
+- For maksimal personvern kan JSZip-scriptet lastes lokalt og versjonssjekken deaktiveres ved endring av koden.
+
+## Utviklererklæring
+Utvikleren av Scrubber (åpen kildekode-prosjekt på https://github.com/rSignal86/Scrubber) samler ikke inn, behandler eller har tilgang til personopplysninger via dette verktøyet. Eksterne forespørsler er minimale og omfatter ikke dokumentinnhold. Verktøyet leveres «som det er» uten garantier, og brukere har selv ansvar for egen GDPR-etterlevelse.
+
+Ved spørsmål eller bekymringer, opprett gjerne en sak (issue) på GitHub-repositoriet.
+
+**Sist oppdatert: 17. desember 2025**
