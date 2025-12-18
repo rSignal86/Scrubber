@@ -47,8 +47,8 @@ The tool is deliberately designed to keep all processing local to your device, e
 
 For full details on how Scrubber handles privacy, external requests, and its alignment with GDPR requirements, please see the dedicated documents:
 
-- [Data Processing Statement - English](DataProcessingStatement.md) – Explains the roles under GDPR and why Scrubber is **not** a data processor (no Data Processing Agreement required).
-- [Privacy Notice and GDPR Compatibility](PrivacyAndGDPRCompatibility.md) – Detailed information about client-side processing, minimal external requests (JSZip loading and version check), and how the tool supports GDPR principles such as data minimization, transparency, and privacy by design.
+- [Data Processing Statement - English](https://github.com/rSignal86/Scrubber/blob/main/DataProcessingStatement) – Explains the roles under GDPR and why Scrubber is **not** a data processor (no Data Processing Agreement required).
+- [Privacy Notice and GDPR Compatibility](https://github.com/rSignal86/Scrubber/blob/main/PrivacyAndGDPRCompatibility) – Detailed information about client-side processing, minimal external requests (JSZip loading and version check), and how the tool supports GDPR principles such as data minimization, transparency, and privacy by design.
 
 These documents confirm that:
 - No file contents or metadata are transmitted anywhere.
@@ -65,9 +65,9 @@ These documents confirm that:
 
 - `Scrubber.html` – The complete standalone application
 - `data/jszi1p.min.js` – Custom minified JSZip library (primary source)
-- `DataProcessingStatement.md` – Data processing statement in english
-- `DatabehandlerAvtale.md` – Data processing statement in Norwegian
-- `PrivacyAndGDPRCompatibility.md` – Detailed privacy notice and GDPR compatibility
+- `DataProcessingStatement` – Data processing statement in english
+- `DatabehandlerAvtale` – Data processing statement in Norwegian
+- `PrivacyAndGDPRCompatibility` – Detailed privacy notice and GDPR compatibility
 - `README.md` – This file
 
 ## License
