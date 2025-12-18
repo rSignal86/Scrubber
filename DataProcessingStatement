@@ -1,66 +1,49 @@
-# Data Processing Statement for Scrubber
+# Data Processor Agreement for Scrubber
 
-**Scrubber** is a free, open-source, standalone HTML tool designed to remove sensitive metadata from office documents (e.g., .docx, .xlsx, .pptx, .odt, .ods, .odp). It is primarily intended for use in educational settings to ensure anonymity in exam papers by stripping identifying information such as author names, creation/modification dates, and other metadata before submission for grading.
+**Last updated:** December 18, 2025
 
-## Key Privacy Features – Your Data Never Leaves Your Device
+---
 
-Scrubber is built with privacy as the highest priority. The core processing of your files takes place entirely within your web browser, and no content from your documents is ever transmitted to any external server.
+## 1. Purpose
+This agreement governs the use of **Scrubber**, a client-side tool for removing metadata from documents (.docx, .xlsx, .pptx, .odt, .ods, .odp). The purpose is to ensure anonymization and privacy by stripping identifying metadata before further processing.
 
-- **100% Client-Side Processing**: All metadata removal happens locally in your browser using JavaScript and the JSZip library. No file contents, metadata, or any derived data are uploaded, shared, stored remotely, or logged by the tool or its developer.
+---
 
-- **Minimal External Requests for Functionality Only**: Scrubber performs limited HTTP requests to load the JSZip library (primarily from the project’s GitHub repository, with fallback to a public CDN) and to check for new versions via GitHub’s public API. These requests are strictly for public, static resources and contain no user-specific or document-related information whatsoever. Details are provided below.
+## 2. Roles and Responsibilities
+- **The User/Organization** acts as the **Data Controller** and has full control over the use of the tool.
+- **The Developer of Scrubber** is **not a Data Processor**, as no personal data is transferred or processed externally. All processing occurs locally in the user's browser.
 
-- **Temporary Memory Only**: Files exist only in your browser’s temporary memory during use and are automatically cleared when the page is closed or refreshed.
+---
 
-- **No Tracking or Analytics**: The tool uses no cookies, trackers, analytics, or telemetry of any kind.
+## 3. Data Processing
+- No document content, metadata, or personal data is sent to external servers.
+- No storage occurs outside the user's device. Files are processed only in temporary memory and are automatically cleared when the page is closed.
 
-Because **no data from your documents is transmitted**, Scrubber offers an exceptionally low privacy risk profile compared to any server-based alternative.
+---
 
-## External Requests Explained
+## 4. External Resources
+- The tool uses **JSZip** to handle ZIP-based document formats. This library may be loaded from a CDN or hosted locally.
+- No external lookups are performed against PURL URLs in documents; these are static namespace references only.
 
-### 1. Loading the JSZip Library
-Scrubber requires the JSZip library to handle ZIP-based document formats.
+---
 
-- **Primary source**: GitHub raw file (`https://raw.githubusercontent.com/rSignal86/Scrubber/main/data/jszi1p.min.js`).
-- **Fallback source** (only if primary fails): public CDN (`cdnjs.cloudflare.com` hosted by Cloudflare).
+## 5. License and Usage Rights
+The user is granted the right to use, copy, modify, and distribute the software **without restrictions**, provided that:
+- The software remains licensed under the **MIT License**.
+- The user retains the MIT License text in all copies or substantial portions of the software.
 
-These requests fetch only the static JavaScript file. GitHub and Cloudflare may log standard web access details (IP address, timestamp, requested URL, basic headers) for operational, security, and abuse-prevention purposes. This is normal for any public web resource and is governed by their respective GDPR-compliant privacy policies. No document data or personal content is included in these requests.
+**The MIT License provides:**
+- Free use for private and commercial purposes.
+- Permission to modify and distribute.
+- No warranty from the developer.
 
-### 2. Version Check
-On page load, Scrubber contacts GitHub’s public API (`https://api.github.com/repos/rSignal86/Scrubber/releases/latest`) to retrieve the latest release tag. This enables update notifications.
+---
 
-The request contains no user or document data. GitHub may log minimal access information (IP address, timestamp) under its privacy policy for rate-limiting and security purposes. The check fails silently if offline and does not affect functionality.
+## 6. Disclaimer
+The tool is provided "as is" without warranties. The developer is not liable for direct or indirect damages resulting from its use.
 
-Both types of external requests are limited, transparent, and involve only non-sensitive metadata typical of any web page load. Users concerned about these logs may use VPNs, Tor, or modify the open-source code to host resources locally and disable the version check.
+---
 
-## Data Processor Status and GDPR
-
-Scrubber fully supports the principles of the **General Data Protection Regulation (EU) 2016/679 (GDPR)**, with particular emphasis on privacy by design and by default (Article 25) and data minimization (Article 5).
-
-### Roles under GDPR
-- **You (the User)** are the **Data Controller** (GDPR Article 4(7)): You decide when and how to use Scrubber and are responsible for your own processing activities (e.g., anonymizing student submissions).
-
-- **Scrubber** is **not a Data Processor** (GDPR Article 4(8)): No personal data is transferred to or processed by the developer or any third party on your behalf. External requests (script loading and version check) are handled by GitHub and Cloudflare as independent controllers for their own services. Therefore, **no Data Processing Agreement** under GDPR Article 28 is required or applicable.
-
-### Alignment with GDPR Principles
-- **Lawfulness, Fairness, and Transparency** (Art. 5(1)(a)): Processing is user-controlled and fully visible; the open-source code is auditable.
-- **Purpose Limitation** (Art. 5(1)(b)): The tool is dedicated solely to metadata removal for anonymity.
-- **Data Minimization** (Art. 5(1)(c)): Only selected metadata fields are touched; no unnecessary data is collected or transmitted.
-- **Accuracy** (Art. 5(1)(d)): Users can immediately verify cleaned files.
-- **Storage Limitation** (Art. 5(1)(e)): No persistent storage occurs.
-- **Integrity and Confidentiality** (Art. 5(1)(f)): Local execution prevents unauthorized access.
-- **Accountability** (Art. 5(2)): Open-source nature and this statement demonstrate responsibility.
-
-The risk of a personal data breach originating from Scrubber is effectively zero, as no user document data leaves the browser.
-
-## Recommendations for Data Controllers
-When using Scrubber in schools or other organizations:
-- Inform students or data subjects that metadata will be removed to protect anonymity (GDPR Articles 13–14).
-- Document the tool’s use in your Records of Processing Activities (GDPR Article 30) as an anonymization measure.
-- Verify output files before further distribution.
-- For maximum privacy, host the JSZip script locally and disable the version check by editing the code.
-
-## Developer Statement
-The developer of Scrubber (open-source project at https://github.com/rSignal86/Scrubber) does not collect, process, or access any personal data via this tool. External requests are minimal and do not involve document content. The tool is provided “as is” without warranties.
-
-**Last updated: December 17, 2025**
+## 7. Contact
+For questions about this agreement or suggestions for improvements:
+- Create a **GitHub Issue** in the project repository.
